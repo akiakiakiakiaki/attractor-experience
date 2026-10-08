@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+printf '%s\n' 'Running pre-commit checks: lint, types, unit tests, and staged whitespace.'
+git diff --cached --check
+npm run lint
+npm run typecheck
+npm run test:run

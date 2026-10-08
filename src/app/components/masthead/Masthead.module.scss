@@ -1,0 +1,21 @@
+.root {
+  position: absolute;
+  z-index: 2;
+  left: var(--distance);
+  right: var(--distance);
+  top: var(--distance-vertical);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, min(34rem, 50vw)) minmax(0, 1fr);
+  align-items: center;
+  height: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.name {
+  grid-column: 1;
+  grid-row: 1;
+  letter-spacing: 0.08em;
+}

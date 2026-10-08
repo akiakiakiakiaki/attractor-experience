@@ -1,0 +1,38 @@
+{
+  "name": "attractor-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "node scripts/enable-git-hooks.mjs",
+    "dev": "next dev",
+    "build": "node scripts/build.mjs .env.production",
+    "build:prototype": "node scripts/build.mjs .env.prototype",
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit --incremental false",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "e2e": "playwright test",
+    "profile:rendering": "npm run build && node scripts/profile-rendering.mjs"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.4.0",
+    "@mui/material-nextjs": "^9.4.0",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "sass": "^1.105.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^4.1.11"
+  }
+}

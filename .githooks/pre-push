@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root"
+
+printf '%s\n' 'Running browser tests and production build.'
+CI=1 npm run e2e
+
+printf '%s\n' 'Checking the /prototype static build.'
+npm run build:prototype

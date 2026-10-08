@@ -1,0 +1,376 @@
+{
+  "canvas": {
+    "maxDevicePixelRatio": 1.6
+  },
+  "signalProcessing": {
+    "saturation": {
+      "mode": "hard",
+      "drive": 1.5
+    }
+  },
+  "signalEngine": {
+    "routes": [
+      {
+        "source": "attractor.lfo.1",
+        "target": "attractor.modulation.1",
+        "amount": 1
+      },
+      {
+        "source": "attractor.lfo.2",
+        "target": "attractor.modulation.2",
+        "amount": 1
+      },
+      {
+        "source": "attractor.lfo.3",
+        "target": "attractor.modulation.3",
+        "amount": 1
+      },
+      {
+        "source": "motion.damping.lfo",
+        "target": "motion.damping",
+        "amount": 1
+      },
+      {
+        "source": "motion.personal-drift.noise",
+        "target": "motion.personalDriftStrength",
+        "amount": 0.025
+      },
+      {
+        "source": "wordmark.boundary.lfo",
+        "target": "wordmark.openness",
+        "amount": 1
+      },
+      {
+        "source": "wordmark.reveal.envelope",
+        "target": "wordmark.reveal",
+        "amount": 1
+      },
+      {
+        "source": "wordmark.reveal.opacity",
+        "target": "motion.remoteAttractionStrength",
+        "amount": 1.8
+      },
+      {
+        "source": "wordmark.gather-strength.lfo",
+        "target": "wordmark.gatherStrength",
+        "amount": 1,
+        "mode": "multiply"
+      },
+      {
+        "source": "interaction.impulse.envelope",
+        "target": "interaction.impulse",
+        "amount": 1
+      },
+      {
+        "source": "input.interaction.energy",
+        "target": "interaction.energy",
+        "amount": 1
+      },
+      { "source": "input.cursor.x", "target": "cursor.x", "amount": 1 },
+      { "source": "input.cursor.y", "target": "cursor.y", "amount": 1 },
+      {
+        "source": "input.cursor.velocity.x",
+        "target": "cursor.velocity.x",
+        "amount": 1
+      },
+      {
+        "source": "input.cursor.velocity.y",
+        "target": "cursor.velocity.y",
+        "amount": 1
+      }
+    ]
+  },
+  "particles": {
+    "countPerArea": 20,
+    "minimumCount": 3850,
+    "maximumCount": 17800,
+    "seed": 38191,
+    "reducedMotionScale": 0.48,
+    "sizeScaling": {
+      "referenceDiagonal": 1700,
+      "factor": 0.65,
+      "minimumScale": 0.6,
+      "maximumScale": 19.1
+    },
+    "sizeBands": [
+      { "upperShare": 0.84, "minimum": 0.1, "range": 1.4, "exponent": 1.4 },
+      { "upperShare": 0.9985, "minimum": 1.1, "range": 7.3, "exponent": 2.8 },
+      { "upperShare": 1, "minimum": 4.5, "range": 9, "exponent": 5.6 }
+    ],
+    "sizeClustering": {
+      "noiseScale": 1.4,
+      "noiseSeed": 107,
+      "veilCoreWeight": 0.35,
+      "smallBandThresholdShift": 0.035,
+      "mediumBandThresholdShift": 0.0015
+    },
+    "sizeFallDrift": 0.035
+  },
+  "distribution": {
+    "leftBiasPower": 1.4,
+    "noiseSamples": 3,
+    "mainVeil": {
+      "centerY": 0.44,
+      "excursion": -0.18,
+      "noise": [
+        { "scale": 2.4, "amplitude": 0.008, "seed": 40 },
+        { "scale": 1.2, "amplitude": 0.065, "seed": 8 }
+      ],
+      "spread": {
+        "base": 0.105,
+        "noiseScale": 3.1,
+        "noiseAmplitude": 0.045,
+        "seed": 17
+      },
+      "share": { "start": 0.76, "falloff": 0.28, "directionalBias": 0.07 }
+    },
+    "secondVeil": {
+      "centerY": 0.29,
+      "excursion": 0.26,
+      "noise": [
+        { "scale": 3.1, "amplitude": 0.003, "seed": 3 },
+        { "scale": 6.3, "amplitude": 0.04, "seed": 40 }
+      ],
+      "spread": {
+        "base": 0.055,
+        "noiseScale": 35.9,
+        "noiseAmplitude": 0.02,
+        "seed": 71
+      },
+      "share": 0.17
+    }
+  },
+  "motion": {
+    "damping": 1.05,
+    "dampingLfo": {
+      "frequency": 0.0035,
+      "phase": 1.2,
+      "amplitude": 0.12
+    },
+    "personalDriftNoise": {
+      "seed": 731,
+      "frequency": 0.004
+    },
+    "curl": {
+      "xCycles": 1,
+      "timeFrequency": 0.045,
+      "yCycles": 1,
+      "yTimeFrequency": 0.032,
+      "amount": 0.8
+    },
+    "horizontalFlow": {
+      "yCycles": 1,
+      "timeFrequency": 0.075,
+      "curlAmount": 1,
+      "strength": 5.2,
+      "personalDriftFrequency": 0.09,
+      "personalDriftStrength": 0.22
+    },
+    "verticalFlow": {
+      "xCycles": 1,
+      "timeFrequency": 0.058,
+      "curlAmount": 0.8,
+      "settlingSpeed": 1.05,
+      "strength": 2.1
+    }
+  },
+  "attractors": {
+    "oscillators": [
+      {
+        "frequency": 0.018,
+        "phase": 0.2,
+        "amplitude": 0.12,
+        "waveform": "sine"
+      },
+      {
+        "frequency": 0.011,
+        "phase": 1.6,
+        "amplitude": 0.08,
+        "waveform": "tri"
+      },
+      {
+        "frequency": 0.007,
+        "phase": 2.8,
+        "amplitude": 0.05,
+        "waveform": "sine"
+      }
+    ],
+    "coupling": { "firstToSecond": 2, "secondToThird": 3 },
+    "sources": [
+      {
+        "x": 0.31,
+        "y": 0.49,
+        "xFromFirst": 1,
+        "xFromThird": 1,
+        "yFromSecond": 1,
+        "baseStrength": 0.2,
+        "energyStrength": 0.12,
+        "radiusScale": 0.2
+      },
+      {
+        "x": 0.7,
+        "y": 0.53,
+        "xFromSecond": 1,
+        "xFromThird": -1,
+        "yFromFirst": -1,
+        "baseStrength": 0.17,
+        "energyStrength": 0.1,
+        "radiusScale": 0.24
+      },
+      {
+        "x": 0.51,
+        "y": 0.25,
+        "xFromThird": 1,
+        "yFromFirst": 0.6,
+        "baseStrength": 0.09,
+        "energyStrength": 0,
+        "radiusScale": 0.16
+      }
+    ],
+    "forceFalloff": 22,
+    "softening": 180,
+    "forceDistanceRadiusMultiplier": 3.5
+  },
+  "interaction": {
+    "pointer": {
+      "initialOffset": -1000,
+      "influenceRadius": 145,
+      "force": 0.11,
+      "velocityGain": 0.045,
+      "forceDistanceRadiusMultiplier": 4,
+      "flow": {
+        "velocityFollowPerSecond": 0.1,
+        "radiusMultiplier": 2.6,
+        "falloffPower": 1.3,
+        "fullSpeedPixelsPerMillisecond": 0.5,
+        "decaySeconds": 0.7,
+        "smoothing": 0.65,
+        "vortex": 0.24
+      }
+    },
+    "energy": {
+      "maximum": 1,
+      "activeDecaySeconds": 1.1,
+      "restingDecaySeconds": 2.8,
+      "idleAfterMilliseconds": 1500
+    },
+    "trigger": {
+      "amount": 0.9,
+      "clickEnergy": 0.5,
+      "energyGain": 0.2,
+      "attackSeconds": 0.05,
+      "releaseSeconds": 1.7
+    }
+  },
+  "wordmark": {
+    "claim": "Interaction Architect at Heart",
+    "modulation": {
+      "gatherStrengthLfo": {
+        "frequency": 0.0032,
+        "phase": 0.4,
+        "amplitude": 0.3
+      }
+    },
+    "remoteAttraction": {
+      "maximumStrength": 1.8,
+      "minimumDistance": 120,
+      "rampDistance": 700
+    },
+    "mask": {
+      "contentWidth": 1200,
+      "contentHeight": 155,
+      "paddingX": 320,
+      "paddingY": 320
+    },
+    "layout": {
+      "maximumWidth": 720,
+      "widthRatio": 0.67,
+      "compactWidthRatio": 0.84,
+      "compactViewportMaxWidth": 640,
+      "compactViewportMaxHeight": 480,
+      "centerY": 0.47,
+      "verticalOffset": -13,
+      "claimGap": 31
+    },
+    "reveal": {
+      "attackSeconds": 1.9,
+      "releaseSeconds": 2.4,
+      "reducedAttackSeconds": 2.6,
+      "reducedReleaseSeconds": 4
+    },
+    "influence": {
+      "repulsionBand": 6,
+      "gatherBand": 108,
+      "attractionReach": 160,
+      "attractionFarFalloffExponent": 0.8,
+      "densityControl": {
+        "cellSize": 56,
+        "targetDensityMultiplier": 1.8,
+        "strength": 0.9,
+        "radius": 230
+      },
+      "repulsionStrength": 300,
+      "interiorPushDistance": 20,
+      "interiorPushStrength": 8,
+      "gatherStrength": 7,
+      "minimumResistance": 0.035,
+      "ingressStrength": 24,
+      "oscillationFrequency": 0.027,
+      "oscillationAmplitude": 0.5,
+      "phaseJitter": 0.002,
+      "outsideCirculation": 7,
+      "insideCirculation": 3
+    }
+  },
+  "renderer": {
+    "grainAtlas": {
+      "spriteSize": 48,
+      "columns": 8,
+      "rows": 4,
+      "contourPoints": 10,
+      "contourRadius": 19,
+      "contourHeight": 13,
+      "contourShapeHeightStep": 2,
+      "shapePhase": 0.37,
+      "radialBase": 0.64,
+      "radialWaveA": 0.15,
+      "radialWaveAFrequency": 2.3,
+      "radialWaveASeedMultiplier": 1.7,
+      "radialWaveB": 0.1,
+      "radialWaveBFrequency": 3.1,
+      "radialWaveBSeedMultiplier": 1,
+      "grainCount": 4,
+      "grainOpacity": 0.42,
+      "grainRadiusBase": 8,
+      "grainRadiusRange": 9,
+      "grainRadiusIndexOffset": 3,
+      "grainSizeBase": 0.55,
+      "grainSizeStep": 0.13,
+      "grainSizeModulo": 7,
+      "grainSizeIndexStep": 5,
+      "grainXScale": 1.35,
+      "grainYScale": 0.65,
+      "grainHeightScale": 0.8,
+      "grainSeedAngleMultiplier": 1.91,
+      "grainAngleStep": 2.37,
+      "grainRotationPhase": 0.71,
+      "grainRadiusSeedMultiplier": 1,
+      "shapeSeedMultiplier": 0.61803398875,
+      "rotationSeedMultiplier": 0.88196601125,
+      "widthScaleSeedMultiplier": 0.173,
+      "heightScaleSeedMultiplier": 0.291,
+      "widthScaleBase": 0.48,
+      "widthScaleRange": 0.52,
+      "heightScaleBase": 0.74,
+      "heightScaleRange": 0.55,
+      "opacityBase": 0.78,
+      "opacityPerSize": 0.035,
+      "opacitySizeCap": 0.1,
+      "microBatchThreshold": 1.5,
+      "microBatchOpacity": 0.72,
+      "revealThreshold": 0.015,
+      "wordmarkRevealOpacityExponent": 2,
+      "claimLetterSpacing": 0.12
+    }
+  }
+}

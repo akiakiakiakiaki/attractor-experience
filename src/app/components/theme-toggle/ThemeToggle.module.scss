@@ -1,0 +1,40 @@
+.root {
+  grid-column: 3;
+  grid-row: 1;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-inline);
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-underline-offset: 0.25em;
+}
+
+.root:hover {
+  text-decoration: underline;
+}
+
+.root:focus-visible {
+  outline: 0.0625rem solid currentColor;
+  outline-offset: 0.3125rem;
+}
+
+.root .icon {
+  font-size: 1rem;
+}
+
+@media (max-width: 40rem), (max-height: 30rem) {
+  .root {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    justify-content: center;
+  }
+
+  .root .icon {
+    font-size: 1.25rem;
+  }
+}

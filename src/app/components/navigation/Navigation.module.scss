@@ -1,0 +1,44 @@
+.root {
+  position: absolute;
+  z-index: 2;
+  left: var(--distance);
+  bottom: var(--distance-vertical);
+  display: flex;
+  align-items: center;
+  gap: clamp(1.5rem, 1.95vw, 2.25rem);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.root a,
+.root button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-inline);
+  text-decoration: none;
+  text-underline-offset: 0.25em;
+}
+
+.root a:hover,
+.root button:hover {
+  text-decoration: underline;
+}
+
+.root a:focus-visible,
+.root button:focus-visible {
+  outline: 0.0625rem solid currentColor;
+  outline-offset: 0.3125rem;
+}
+
+@media (max-width: 40rem), (max-height: 30rem) {
+  .root {
+    bottom: calc(var(--distance-vertical) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .root a,
+  .root button {
+    min-height: 2.875rem;
+  }
+}

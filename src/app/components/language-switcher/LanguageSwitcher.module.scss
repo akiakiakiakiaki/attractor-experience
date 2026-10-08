@@ -1,0 +1,70 @@
+.dock {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: var(--distance-vertical);
+  display: flex;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-small);
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.group {
+  padding: 0.125rem;
+  border: 0.0625rem solid color-mix(in srgb, var(--foreground) 42%, transparent);
+  border-radius: 999px !important;
+  background-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+
+.group :global(.MuiToggleButton-root) {
+  min-width: 1.75rem;
+  padding: 0.35em 0.55em;
+  border: 0;
+  border-radius: 999px !important;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: 1;
+  text-transform: inherit;
+}
+
+.group :global(.MuiToggleButton-root.Mui-selected) {
+  color: var(--background);
+  background-color: var(--foreground);
+}
+
+.group :global(.MuiToggleButton-root.Mui-selected:hover) {
+  background-color: color-mix(
+    in srgb,
+    var(--foreground) 84%,
+    var(--background)
+  );
+}
+
+@media (max-width: 40rem), (max-height: 30rem) {
+  .dock {
+    bottom: calc(var(--distance-vertical) + 3rem + env(safe-area-inset-bottom, 0px));
+    min-height: 2.875rem;
+    align-items: center;
+  }
+
+  .group {
+    align-items: center;
+    gap: 0.125rem;
+  }
+
+  .group :global(.MuiToggleButton-root) {
+    min-width: 2.5rem;
+    min-height: 1.725rem;
+    padding: 0.35em 0.7em;
+  }
+}
+
+@media (max-width: 40rem) and (orientation: landscape),
+  (max-height: 30rem) and (orientation: landscape) {
+  .dock {
+    bottom: calc(var(--distance-vertical) + env(safe-area-inset-bottom, 0px));
+  }
+}

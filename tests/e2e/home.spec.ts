@@ -1,0 +1,61 @@
+import { expect, test } from '@playwright/test';
+
+test('serves the experience and keeps the canvas mounted when changing language', async ({ page }) => {
+  const runtimeErrors: string[] = [];
+  const hydrationWarnings: string[] = [];
+
+  page.on('pageerror', (error) => runtimeErrors.push(error.message));
+  page.on('console', (message) => {
+    const text = message.text();
+    if (message.type() === 'error') runtimeErrors.push(text);
+    if (message.type() === 'warning' && /hydration|didn't match/i.test(text)) {
+      hydrationWarnings.push(text);
+    }
+  });
+
+  await page.goto('/en/');
+  const canvas = page.getByTestId('attractor-canvas');
+  await expect(canvas).toBeVisible();
+  await expect(canvas).toHaveAttribute('aria-label', /interactive/i);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+
+  const canvasHasArea = await canvas.evaluate((element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return width > 0 && height > 0;
+  });
+  expect(canvasHasArea).toBe(true);
+
+  await page.evaluate(() => {
+    (window as Window & { __initialCanvas?: HTMLCanvasElement }).__initialCanvas =
+      document.querySelector('[data-testid="attractor-canvas"]') ?? undefined;
+  });
+
+  await page.getByRole('button', { name: 'Español' }).click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'es');
+  await expect(page.getByTestId('attractor-claim')).toContainText('Arquitecto de interacción');
+  await expect(page).toHaveURL(/\/es\/$/);
+
+  const canvasWasPreserved = await page.evaluate(() =>
+    document.querySelector('[data-testid="attractor-canvas"]') ===
+      (window as Window & { __initialCanvas?: HTMLCanvasElement }).__initialCanvas,
+  );
+  expect(canvasWasPreserved).toBe(true);
+
+  await page.getByRole('button', { name: 'Cambiar al modo claro' }).click();
+  await expect(page.getByRole('button', { name: 'Cambiar al modo oscuro' })).toBeVisible();
+  expect(runtimeErrors).toEqual([]);
+  expect(hydrationWarnings).toEqual([]);
+});
+
+test('keeps the canvas inside a narrow mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/de/');
+
+  const canvas = page.getByTestId('attractor-canvas');
+  await expect(canvas).toBeVisible();
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.width).toBeGreaterThan(0);
+  expect(box!.height).toBeGreaterThan(0);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+});
