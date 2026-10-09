@@ -18,4 +18,11 @@
   grid-column: 1;
   grid-row: 1;
   letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem), (max-height: 30rem) {
+  .root {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
 }

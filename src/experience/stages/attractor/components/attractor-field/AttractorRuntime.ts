@@ -40,6 +40,7 @@ export class AttractorRuntime {
   private height = 0;
   private lastFrameTime = 0;
   private lastPointerMove = 0;
+  private activeTouchPointerId: number | null = null;
   private animationFrame = 0;
   private claimFontSize = 0;
   private foreground = '';
@@ -126,8 +127,11 @@ export class AttractorRuntime {
     this.canvas.addEventListener('pointerenter', this.onPointerEnter);
     this.canvas.addEventListener('pointerleave', this.onPointerLeave);
     this.canvas.addEventListener('pointerdown', this.onPointerDown);
+    this.canvas.addEventListener('pointerup', this.onPointerUp);
+    this.canvas.addEventListener('pointercancel', this.onPointerCancel);
+    this.canvas.addEventListener('touchstart', this.onTouchStart, { passive: false });
     this.canvas.addEventListener('focus', this.onFocus);
-    this.canvas.addEventListener('blur', this.onPointerLeave);
+    this.canvas.addEventListener('blur', this.onBlur);
   }
 
   private readonly updateThemeColors = (): void => {
@@ -171,8 +175,12 @@ export class AttractorRuntime {
       : 0;
     this.pointer.x = x;
     this.pointer.y = y;
+    const pointerEnergy = this.energy + velocity * config.interaction.pointer.velocityGain;
+    const movementEnergy = event.pointerType === 'mouse'
+      ? Math.max(pointerEnergy, config.interaction.pointer.mouseMovementEnergy)
+      : pointerEnergy;
     this.energy = Saturation.process(
-      this.energy + velocity * config.interaction.pointer.velocityGain,
+      movementEnergy,
       config.signalProcessing.saturation,
       0,
       config.interaction.energy.maximum,
@@ -183,11 +191,23 @@ export class AttractorRuntime {
   };
 
   private readonly onPointerEnter = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') return;
+
     this.active = true;
-    this.revealRequested = event.pointerType === 'mouse';
+    this.revealRequested = true;
+    this.lastPointerMove = performance.now();
   };
 
-  private readonly onPointerLeave = (): void => {
+  private readonly onPointerLeave = (event: PointerEvent): void => {
+    if (event.pointerType === 'touch') return;
+    this.deactivatePointer();
+  };
+
+  private readonly onBlur = (): void => {
+    this.deactivatePointer();
+  };
+
+  private readonly deactivatePointer = (): void => {
     this.active = false;
     this.revealRequested = false;
     this.stage.setRevealTarget(0);
@@ -196,9 +216,26 @@ export class AttractorRuntime {
   private readonly onFocus = (): void => {
     this.active = true;
     this.revealRequested = true;
+    this.lastPointerMove = performance.now();
   };
 
-  private readonly onPointerDown = (): void => {
+  private readonly onPointerDown = (event: PointerEvent): void => {
+    if (!event.isPrimary) return;
+
+    const bounds = this.canvas.getBoundingClientRect();
+    this.pointer.x = event.clientX - bounds.left;
+    this.pointer.y = event.clientY - bounds.top;
+    this.pointerVelocity.x = 0;
+    this.pointerVelocity.y = 0;
+    this.lastPointerMove = performance.now();
+    this.active = true;
+    this.revealRequested = true;
+
+    if (event.pointerType === 'touch') {
+      this.activeTouchPointerId = event.pointerId;
+      this.canvas.setPointerCapture(event.pointerId);
+    }
+
     this.stage.triggerImpulse(config.interaction.trigger.amount);
     this.energy = Saturation.process(
       this.energy + config.interaction.trigger.clickEnergy,
@@ -206,6 +243,24 @@ export class AttractorRuntime {
       0,
       config.interaction.energy.maximum,
     );
+  };
+
+  private readonly onPointerUp = (event: PointerEvent): void => {
+    if (event.pointerId === this.activeTouchPointerId) {
+      this.activeTouchPointerId = null;
+    }
+  };
+
+  private readonly onPointerCancel = (event: PointerEvent): void => {
+    if (event.pointerId !== this.activeTouchPointerId) return;
+    this.activeTouchPointerId = null;
+    this.deactivatePointer();
+  };
+
+  private readonly onTouchStart = (event: TouchEvent): void => {
+    // The canvas is a gesture surface, not selectable content. Keep this local
+    // so long-press behavior on navigation and other controls remains native.
+    if (event.cancelable) event.preventDefault();
   };
 
   private readonly tick = (now: number): void => {
@@ -306,8 +361,11 @@ export class AttractorRuntime {
     this.canvas.removeEventListener('pointerenter', this.onPointerEnter);
     this.canvas.removeEventListener('pointerleave', this.onPointerLeave);
     this.canvas.removeEventListener('pointerdown', this.onPointerDown);
+    this.canvas.removeEventListener('pointerup', this.onPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.onPointerCancel);
+    this.canvas.removeEventListener('touchstart', this.onTouchStart);
     this.canvas.removeEventListener('focus', this.onFocus);
-    this.canvas.removeEventListener('blur', this.onPointerLeave);
+    this.canvas.removeEventListener('blur', this.onBlur);
     this.wordmarkImage.onload = null;
   }
 }

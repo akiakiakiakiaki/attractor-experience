@@ -129,8 +129,12 @@ export interface AttractorConfig {
     pointer: {
       initialOffset: number;
       influenceRadius: number;
+      referenceViewportDiagonal: number;
+      minimumViewportRadiusScale: number;
+      maximumViewportRadiusScale: number;
       force: number;
       velocityGain: number;
+      mouseMovementEnergy: number;
       forceDistanceRadiusMultiplier: number;
       flow: {
         velocityFollowPerSecond: number;
@@ -350,6 +354,28 @@ function validateConfig(config: AttractorConfig): void {
     assertPositive(source.radiusScale, `attractors.sources[${index}].radiusScale`);
   }
   assertPositive(config.interaction.pointer.influenceRadius, 'interaction.pointer.influenceRadius');
+  assertPositive(
+    config.interaction.pointer.referenceViewportDiagonal,
+    'interaction.pointer.referenceViewportDiagonal',
+  );
+  assertPositive(
+    config.interaction.pointer.minimumViewportRadiusScale,
+    'interaction.pointer.minimumViewportRadiusScale',
+  );
+  assertPositive(
+    config.interaction.pointer.maximumViewportRadiusScale,
+    'interaction.pointer.maximumViewportRadiusScale',
+  );
+  if (
+    config.interaction.pointer.minimumViewportRadiusScale >
+    config.interaction.pointer.maximumViewportRadiusScale
+  ) {
+    throw new Error('interaction.pointer minimum viewport radius scale cannot exceed its maximum.');
+  }
+  assertUnitInterval(config.interaction.pointer.mouseMovementEnergy, 'interaction.pointer.mouseMovementEnergy');
+  if (config.interaction.pointer.mouseMovementEnergy > config.interaction.energy.maximum) {
+    throw new Error('interaction.pointer.mouseMovementEnergy cannot exceed interaction.energy.maximum.');
+  }
   assertPositive(
     config.interaction.pointer.forceDistanceRadiusMultiplier,
     'interaction.pointer.forceDistanceRadiusMultiplier',

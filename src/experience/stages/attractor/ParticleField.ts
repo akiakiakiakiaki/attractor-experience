@@ -261,7 +261,16 @@ export class ParticleField {
     const targetVelocityY = hasPointerFlow
       ? (pointerDirectionY + pointerDirectionX * pointerFlow.vortex) * pointerFlowSpeed
       : 0;
-    const pointerFlowRadius = pointerConfig.influenceRadius * pointerFlow.radiusMultiplier;
+    const viewportDiagonal = Math.hypot(this.width, this.height);
+    const viewportRadiusScale = Math.max(
+      pointerConfig.minimumViewportRadiusScale,
+      Math.min(
+        pointerConfig.maximumViewportRadiusScale,
+        viewportDiagonal / pointerConfig.referenceViewportDiagonal,
+      ),
+    );
+    const pointerInfluenceRadius = pointerConfig.influenceRadius * viewportRadiusScale;
+    const pointerFlowRadius = pointerInfluenceRadius * pointerFlow.radiusMultiplier;
 
     const influence = config.wordmark.influence;
     const hasLogo = logo !== null && logoBox.w > 0 && logoBox.h > 0;
@@ -286,8 +295,8 @@ export class ParticleField {
       energy,
       pointerActive: energy > 0.001,
       pointerMaxDistanceSquared:
-        (pointerConfig.influenceRadius * pointerConfig.forceDistanceRadiusMultiplier) ** 2,
-      pointerInfluenceRadius: pointerConfig.influenceRadius,
+        (pointerInfluenceRadius * pointerConfig.forceDistanceRadiusMultiplier) ** 2,
+      pointerInfluenceRadius,
       pointerForce: pointerConfig.force,
       pointerFlow,
       hasPointerFlow,

@@ -235,8 +235,12 @@
     "pointer": {
       "initialOffset": -1000,
       "influenceRadius": 145,
+      "referenceViewportDiagonal": 930,
+      "minimumViewportRadiusScale": 0.9,
+      "maximumViewportRadiusScale": 1.65,
       "force": 0.11,
       "velocityGain": 0.045,
+      "mouseMovementEnergy": 0.3,
       "forceDistanceRadiusMultiplier": 4,
       "flow": {
         "velocityFollowPerSecond": 0.1,
