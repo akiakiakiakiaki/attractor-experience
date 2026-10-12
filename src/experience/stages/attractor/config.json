@@ -82,20 +82,20 @@
   },
   "particles": {
     "countPerArea": 20,
-    "minimumCount": 3850,
-    "maximumCount": 17800,
+    "minimumCount": 3000,
+    "maximumCount": 16000,
     "seed": 38191,
     "reducedMotionScale": 0.48,
     "sizeScaling": {
       "referenceDiagonal": 1700,
       "factor": 0.65,
       "minimumScale": 0.6,
-      "maximumScale": 19.1
+      "maximumScale": 19
     },
     "sizeBands": [
-      { "upperShare": 0.84, "minimum": 0.1, "range": 1.4, "exponent": 1.4 },
-      { "upperShare": 0.9985, "minimum": 1.1, "range": 7.3, "exponent": 2.8 },
-      { "upperShare": 1, "minimum": 4.5, "range": 9, "exponent": 5.6 }
+      { "upperShare": 0.8, "minimum": 0.25, "range": 1.5, "exponent": 1.4 },
+      { "upperShare": 0.985, "minimum": 1, "range": 4.5, "exponent": 2.8 },
+      { "upperShare": 1, "minimum": 4.5, "range": 6, "exponent": 1.1 }
     ],
     "sizeClustering": {
       "noiseScale": 1.4,
@@ -114,12 +114,12 @@
       "excursion": -0.18,
       "noise": [
         { "scale": 2.4, "amplitude": 0.008, "seed": 40 },
-        { "scale": 1.2, "amplitude": 0.065, "seed": 8 }
+        { "scale": 1.2, "amplitude": 0.035, "seed": 8 }
       ],
       "spread": {
         "base": 0.105,
         "noiseScale": 3.1,
-        "noiseAmplitude": 0.045,
+        "noiseAmplitude": 0.025,
         "seed": 17
       },
       "share": { "start": 0.76, "falloff": 0.28, "directionalBias": 0.07 }
@@ -252,6 +252,21 @@
         "vortex": 0.24
       }
     },
+    "gestures": {
+      "influenceRadiusMultiplier": 0.75,
+      "responseVariation": 0.35,
+      "pinch": {
+        "fullSpeedPixelsPerSecond": 700,
+        "velocityImpulse": 30,
+        "decaySeconds": 0.28,
+        "contractionMultiplier": 0.7
+      },
+      "rotation": {
+        "fullSpeedRadiansPerSecond": 6,
+        "velocityImpulse": 18,
+        "decaySeconds": 0.28
+      }
+    },
     "energy": {
       "maximum": 1,
       "activeDecaySeconds": 1.1,
@@ -290,6 +305,7 @@
       "maximumWidth": 720,
       "widthRatio": 0.67,
       "compactWidthRatio": 0.84,
+      "compactLandscapeScale": 0.7,
       "compactViewportMaxWidth": 640,
       "compactViewportMaxHeight": 480,
       "centerY": 0.47,

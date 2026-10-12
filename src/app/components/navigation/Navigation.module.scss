@@ -35,6 +35,7 @@
 @media (max-width: 40rem), (max-height: 30rem) {
   .root {
     bottom: calc(var(--distance-vertical) + env(safe-area-inset-bottom, 0px));
+    gap: 1rem;
   }
 
   .root a,

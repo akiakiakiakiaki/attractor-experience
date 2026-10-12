@@ -2,8 +2,8 @@
 
 The project separates deterministic logic checks from browser behavior:
 
-- Vitest covers signal math, particle distribution, mask generation, and particle/wordmark interaction.
-- Playwright covers rendered behavior, navigation controls, hydration, responsive layout, keyboard access, and automated accessibility rules.
+- Vitest covers signal-engine routing, oscillator/envelope behavior, gesture interpretation, mask generation, and particle interaction.
+- Playwright covers rendering, language/theme controls, hydration, desktop pointer movement, multi-touch input, responsive layout, SEO output, keyboard access, and automated accessibility rules.
 
 ## Browser and accessibility tests
 
@@ -20,12 +20,12 @@ Run the browser suite:
 npm run e2e
 ```
 
-The Playwright web server creates the production static export and serves it locally. Axe scans each supported locale against WCAG 2.0, 2.1, and 2.2 A/AA rules plus best-practice rules. The scans cover dark and light themes and a narrow mobile viewport. A keyboard check verifies focus access to the canvas and theme control.
+The Playwright web server creates the production static export and serves it locally. Axe scans each supported locale against WCAG 2.0, 2.1, and 2.2 A/AA rules plus best-practice rules. The scans cover dark and light themes and a narrow mobile viewport. Keyboard checks verify focus access to the canvas and theme control. Separate browser checks cover landscape layout, no-click pointer movement, multi-touch pointer delivery, and generated SEO files.
 
 ## Test scope
 
-- Unit tests exercise algorithms and simulation behavior rather than fixed JSON values.
-- Integration tests verify that the particle simulation responds to the wordmark influence mask.
+- Unit tests exercise reusable signal and gesture algorithms rather than fixed JSON values.
+- Integration tests verify that particle motion responds to the wordmark mask, cursor direction, pinch, and rotation.
 - Browser tests cover behavior that depends on the rendered app and browser environment.
 - The attractor config validates its own ranges and enum values when loaded. Tests that only repeat those static config assertions do not add useful coverage.
 

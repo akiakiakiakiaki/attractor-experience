@@ -4,6 +4,7 @@ import { AttractorStage } from '@/experience/stages/attractor/AttractorStage';
 import { CanvasRenderer } from '@/experience/stages/attractor/CanvasRenderer';
 import { createInfluenceMask, type InfluenceMask } from '@/experience/stages/attractor/InfluenceMask';
 import { ParticleField } from '@/experience/stages/attractor/ParticleField';
+import { TouchGestureTracker } from './TouchGestureTracker';
 import config from '@/experience/stages/attractor/AttractorConfig';
 
 const WORDMARK_CONTENT = {
@@ -27,6 +28,8 @@ export class AttractorRuntime {
     y: config.interaction.pointer.initialOffset,
   };
   private readonly pointerVelocity: Vec2 = { x: 0, y: 0 };
+  private readonly touchPointers = new Map<number, Vec2>();
+  private readonly touchGestureTracker = new TouchGestureTracker();
   private readonly box = { x: 0, y: 0, w: 0, h: 0 };
   private readonly startTime = performance.now();
   private readonly motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
@@ -40,12 +43,13 @@ export class AttractorRuntime {
   private height = 0;
   private lastFrameTime = 0;
   private lastPointerMove = 0;
-  private activeTouchPointerId: number | null = null;
   private animationFrame = 0;
   private claimFontSize = 0;
   private foreground = '';
   private background = '';
   private energy = 0;
+  private pinchForce = 0;
+  private rotationForce = 0;
   private active = false;
   private revealRequested = false;
   private reducedMotion = this.motionQuery.matches;
@@ -158,9 +162,32 @@ export class AttractorRuntime {
 
   private readonly onPointerMove = (event: PointerEvent): void => {
     const now = performance.now();
+    if (event.pointerType === 'touch') {
+      const touch = this.touchPointers.get(event.pointerId);
+      if (!touch) return;
+      const bounds = this.canvas.getBoundingClientRect();
+      touch.x = event.clientX - bounds.left;
+      touch.y = event.clientY - bounds.top;
+
+      if (this.touchPointers.size >= 2) {
+        this.updateTouchGesture(now);
+        return;
+      }
+
+      this.updatePointerPosition(touch.x, touch.y, now, 'touch');
+      return;
+    }
+
     const bounds = this.canvas.getBoundingClientRect();
-    const x = event.clientX - bounds.left;
-    const y = event.clientY - bounds.top;
+    this.updatePointerPosition(event.clientX - bounds.left, event.clientY - bounds.top, now, event.pointerType);
+  };
+
+  private readonly updatePointerPosition = (
+    x: number,
+    y: number,
+    now: number,
+    pointerType: string,
+  ): void => {
     const elapsed = Math.max(1, now - this.lastPointerMove);
     const dx = x - this.pointer.x;
     const dy = y - this.pointer.y;
@@ -176,7 +203,7 @@ export class AttractorRuntime {
     this.pointer.x = x;
     this.pointer.y = y;
     const pointerEnergy = this.energy + velocity * config.interaction.pointer.velocityGain;
-    const movementEnergy = event.pointerType === 'mouse'
+    const movementEnergy = pointerType === 'mouse'
       ? Math.max(pointerEnergy, config.interaction.pointer.mouseMovementEnergy)
       : pointerEnergy;
     this.energy = Saturation.process(
@@ -220,21 +247,34 @@ export class AttractorRuntime {
   };
 
   private readonly onPointerDown = (event: PointerEvent): void => {
-    if (!event.isPrimary) return;
-
     const bounds = this.canvas.getBoundingClientRect();
-    this.pointer.x = event.clientX - bounds.left;
-    this.pointer.y = event.clientY - bounds.top;
+    const x = event.clientX - bounds.left;
+    const y = event.clientY - bounds.top;
+
+    if (event.pointerType === 'touch') {
+      this.touchPointers.set(event.pointerId, { x, y });
+      this.canvas.setPointerCapture(event.pointerId);
+      this.active = true;
+      this.revealRequested = true;
+      this.lastPointerMove = performance.now();
+
+      if (this.touchPointers.size >= 2) {
+        this.pointerVelocity.x = 0;
+        this.pointerVelocity.y = 0;
+        this.updateTouchGesture(this.lastPointerMove, true);
+        return;
+      }
+    } else if (!event.isPrimary) {
+      return;
+    }
+
+    this.pointer.x = x;
+    this.pointer.y = y;
     this.pointerVelocity.x = 0;
     this.pointerVelocity.y = 0;
     this.lastPointerMove = performance.now();
     this.active = true;
     this.revealRequested = true;
-
-    if (event.pointerType === 'touch') {
-      this.activeTouchPointerId = event.pointerId;
-      this.canvas.setPointerCapture(event.pointerId);
-    }
 
     this.stage.triggerImpulse(config.interaction.trigger.amount);
     this.energy = Saturation.process(
@@ -246,16 +286,62 @@ export class AttractorRuntime {
   };
 
   private readonly onPointerUp = (event: PointerEvent): void => {
-    if (event.pointerId === this.activeTouchPointerId) {
-      this.activeTouchPointerId = null;
+    if (event.pointerType !== 'touch') return;
+    this.touchPointers.delete(event.pointerId);
+    this.touchGestureTracker.reset();
+    const remainingTouch = this.touchPointers.values().next().value;
+    if (remainingTouch) {
+      this.pointer.x = remainingTouch.x;
+      this.pointer.y = remainingTouch.y;
+      this.pointerVelocity.x = 0;
+      this.pointerVelocity.y = 0;
+      this.lastPointerMove = performance.now();
     }
   };
 
   private readonly onPointerCancel = (event: PointerEvent): void => {
-    if (event.pointerId !== this.activeTouchPointerId) return;
-    this.activeTouchPointerId = null;
-    this.deactivatePointer();
+    if (event.pointerType !== 'touch') return;
+    this.touchPointers.delete(event.pointerId);
+    this.touchGestureTracker.reset();
+    this.pinchForce = 0;
+    this.rotationForce = 0;
+    const remainingTouch = this.touchPointers.values().next().value;
+    if (remainingTouch) {
+      this.pointer.x = remainingTouch.x;
+      this.pointer.y = remainingTouch.y;
+      this.pointerVelocity.x = 0;
+      this.pointerVelocity.y = 0;
+      this.lastPointerMove = performance.now();
+    } else {
+      this.deactivatePointer();
+    }
   };
+
+  private updateTouchGesture(now: number, establishBaseline = false): void {
+    const [first, second] = [...this.touchPointers.values()];
+    if (!first || !second) return;
+
+    const sample = this.touchGestureTracker.update(first, second, now, establishBaseline);
+    this.pinchForce = Saturation.process(
+      sample.pinchSpeed / config.interaction.gestures.pinch.fullSpeedPixelsPerSecond,
+      config.signalProcessing.saturation,
+      -1,
+      1,
+    );
+    this.rotationForce = Saturation.process(
+      sample.angularSpeed / config.interaction.gestures.rotation.fullSpeedRadiansPerSecond,
+      config.signalProcessing.saturation,
+      -1,
+      1,
+    );
+    this.pointer.x = sample.center.x;
+    this.pointer.y = sample.center.y;
+    this.pointerVelocity.x = 0;
+    this.pointerVelocity.y = 0;
+    this.active = true;
+    this.revealRequested = true;
+    this.lastPointerMove = now;
+  }
 
   private readonly onTouchStart = (event: TouchEvent): void => {
     // The canvas is a gesture surface, not selectable content. Keep this local
@@ -306,6 +392,7 @@ export class AttractorRuntime {
         remoteAttractionStrength: stageFrame.remoteAttractionStrength,
         gatherStrength: stageFrame.gatherStrength,
       },
+      { pinch: this.pinchForce, rotation: this.rotationForce },
     );
     this.renderer.draw(
       this.field.grains,
@@ -323,6 +410,8 @@ export class AttractorRuntime {
     const pointerDecay = Math.exp(-dt / pointerFlow.decaySeconds);
     this.pointerVelocity.x *= pointerDecay;
     this.pointerVelocity.y *= pointerDecay;
+    this.pinchForce *= Math.exp(-dt / config.interaction.gestures.pinch.decaySeconds);
+    this.rotationForce *= Math.exp(-dt / config.interaction.gestures.rotation.decaySeconds);
     if (this.active && now - this.lastPointerMove > config.interaction.energy.idleAfterMilliseconds) {
       this.active = false;
     }
@@ -337,7 +426,13 @@ export class AttractorRuntime {
     const isCompactViewport =
       this.width <= layout.compactViewportMaxWidth ||
       this.height <= layout.compactViewportMaxHeight;
-    const widthRatio = isCompactViewport ? layout.compactWidthRatio : layout.widthRatio;
+    const isCompactLandscape =
+      this.height <= layout.compactViewportMaxHeight && this.width > this.height;
+    const widthRatio = isCompactLandscape
+      ? layout.compactWidthRatio * layout.compactLandscapeScale
+      : isCompactViewport
+        ? layout.compactWidthRatio
+        : layout.widthRatio;
     const logoWidth = Math.min(this.width * widthRatio, layout.maximumWidth);
     const logoHeight = logoWidth * config.wordmark.mask.contentHeight /
       config.wordmark.mask.contentWidth;

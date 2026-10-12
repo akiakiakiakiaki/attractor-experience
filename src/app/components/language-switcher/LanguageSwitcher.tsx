@@ -1,6 +1,6 @@
 import type { MouseEvent } from 'react';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
-import type { Locale } from '@/i18n/messages';
+import { locales, messages, type Locale } from '@/i18n/messages';
 import styles from './LanguageSwitcher.module.scss';
 
 interface LanguageSwitcherProps {
@@ -20,9 +20,15 @@ export function LanguageSwitcher({ locale, label, onChange }: LanguageSwitcherPr
         aria-label={label}
         size="small"
       >
-        <ToggleButton value="de" aria-label="Deutsch">De</ToggleButton>
-        <ToggleButton value="es" aria-label="Español">Es</ToggleButton>
-        <ToggleButton value="en" aria-label="English">En</ToggleButton>
+        {locales.map((availableLocale) => (
+          <ToggleButton
+            key={availableLocale}
+            value={availableLocale}
+            aria-label={messages[availableLocale].languageName}
+          >
+            {availableLocale.toUpperCase()}
+          </ToggleButton>
+        ))}
       </ToggleButtonGroup>
     </div>
   );

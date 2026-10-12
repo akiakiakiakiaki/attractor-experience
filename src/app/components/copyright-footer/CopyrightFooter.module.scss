@@ -15,5 +15,6 @@
   .root {
     bottom: calc(var(--distance-vertical) + env(safe-area-inset-bottom, 0px));
     min-height: 2.875rem;
+    display: none;
   }
 }

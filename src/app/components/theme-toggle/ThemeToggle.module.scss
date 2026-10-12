@@ -4,7 +4,7 @@
   justify-self: end;
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-inline);
+  gap: calc(var(--spacing-inline) / 2);
   padding: 0;
   background: none;
   border: 0;

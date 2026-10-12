@@ -1,0 +1,24 @@
+.fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+}
+
+.languages {
+  display: flex;
+  gap: var(--spacing-inline);
+  font-size: var(--font-size-small);
+  text-transform: uppercase;
+}
+
+.languages a {
+  padding: 0.5em 0.75em;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.languages a:focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 0.25em;
+}

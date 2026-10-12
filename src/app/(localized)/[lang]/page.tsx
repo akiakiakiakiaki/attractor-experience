@@ -1,7 +1,7 @@
-import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { LocalizedHome } from '../components/home-experience/LocalizedHome';
-import { isLocale, locales, messages } from '@/i18n/messages';
+import { LocalizedHome } from '../../components/home-experience/LocalizedHome';
+import { localizedMetadata } from '../../seo';
+import { isLocale, locales } from '@/i18n/messages';
 
 export const dynamicParams = false;
 
@@ -11,13 +11,10 @@ export function generateStaticParams() {
 
 type LocalizedPageProps = { params: Promise<{ lang: string }> };
 
-export async function generateMetadata({ params }: LocalizedPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: LocalizedPageProps) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  return {
-    title: messages[lang].pageTitle,
-    description: messages[lang].description,
-  };
+  return localizedMetadata(lang);
 }
 
 export default async function LocalizedPage({ params }: LocalizedPageProps) {

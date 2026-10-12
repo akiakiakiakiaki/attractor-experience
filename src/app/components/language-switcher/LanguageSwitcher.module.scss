@@ -45,20 +45,37 @@
 
 @media (max-width: 40rem), (max-height: 30rem) {
   .dock {
-    bottom: calc(var(--distance-vertical) + 3rem + env(safe-area-inset-bottom, 0px));
+    right: var(--distance);
+    bottom: calc(var(--distance-vertical) + env(safe-area-inset-bottom, 0px));
+    left: auto;
     min-height: 2.875rem;
     align-items: center;
+    transform: none;
   }
 
   .group {
     align-items: center;
     gap: 0.125rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
   }
 
   .group :global(.MuiToggleButton-root) {
-    min-width: 2.5rem;
-    min-height: 1.725rem;
-    padding: 0.35em 0.7em;
+    min-width: 0;
+    min-height: 2.875rem;
+    padding: 0.35em 0.3em;
+    border: 0;
+    border-radius: 0 !important;
+    background: transparent;
+  }
+
+  .group :global(.MuiToggleButton-root.Mui-selected),
+  .group :global(.MuiToggleButton-root.Mui-selected:hover) {
+    background: transparent;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
   }
 }
 

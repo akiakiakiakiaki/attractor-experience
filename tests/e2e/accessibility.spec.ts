@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { locales } from '../../src/i18n/messages';
 
 async function expectNoAccessibilityViolations(page: import('@playwright/test').Page) {
   const results = await new AxeBuilder({ page })
@@ -10,7 +11,7 @@ async function expectNoAccessibilityViolations(page: import('@playwright/test').
 }
 
 test('meets automated accessibility checks in every supported locale', async ({ page }) => {
-  for (const locale of ['en', 'de', 'es']) {
+  for (const locale of locales) {
     await page.goto(`/${locale}/`);
     await expect(page.getByTestId('attractor-canvas')).toBeVisible();
     await expectNoAccessibilityViolations(page);

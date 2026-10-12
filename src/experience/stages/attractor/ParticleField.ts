@@ -30,6 +30,11 @@ export interface ParticleFieldModulation {
   wordmarkOpennessPhaseSpan?: number;
 }
 
+export interface ParticleGestureForces {
+  pinch: number;
+  rotation: number;
+}
+
 type LogoBox = { x: number; y: number; w: number; h: number };
 type PreparedAttractor = {
   x: number;
@@ -53,9 +58,13 @@ interface ParticleStepContext {
   activeAttractors: PreparedAttractor[];
   pointer: Vec2;
   energy: number;
+  pinchForce: number;
+  rotationForce: number;
   pointerActive: boolean;
   pointerMaxDistanceSquared: number;
+  gestureMaxDistanceSquared: number;
   pointerInfluenceRadius: number;
+  gestureInfluenceRadius: number;
   pointerForce: number;
   pointerFlow: AttractorConfig['interaction']['pointer']['flow'];
   hasPointerFlow: boolean;
@@ -89,6 +98,8 @@ const DEFAULT_MODULATION: ParticleFieldModulation = {
   personalDriftStrength: config.motion.horizontalFlow.personalDriftStrength,
   remoteAttractionStrength: 0,
 };
+
+const NO_GESTURE_FORCE: ParticleGestureForces = { pinch: 0, rotation: 0 };
 
 function periodicPhase(position: number, extent: number, cycles: number): number {
   return position / extent * Math.PI * 2 * cycles;
@@ -154,6 +165,7 @@ export class ParticleField {
     reduced: boolean,
     pointerVelocity: Vec2 = { x: 0, y: 0 },
     modulation: ParticleFieldModulation = DEFAULT_MODULATION,
+    gestures: ParticleGestureForces = NO_GESTURE_FORCE,
   ): void {
     const context = this.prepareStepContext(
       dt,
@@ -166,6 +178,7 @@ export class ParticleField {
       reduced,
       pointerVelocity,
       modulation,
+      gestures,
     );
     const densityTarget = this.rebuildDensityMap();
     this.advanceGrains(context, densityTarget);
@@ -224,6 +237,7 @@ export class ParticleField {
     reduced: boolean,
     pointerVelocity: Vec2,
     modulation: ParticleFieldModulation,
+    gestures: ParticleGestureForces,
   ): ParticleStepContext {
     const pace = reduced ? config.particles.reducedMotionScale : 1;
     const dampingRate = Math.max(0.01, modulation.dampingRate);
@@ -271,6 +285,7 @@ export class ParticleField {
     );
     const pointerInfluenceRadius = pointerConfig.influenceRadius * viewportRadiusScale;
     const pointerFlowRadius = pointerInfluenceRadius * pointerFlow.radiusMultiplier;
+    const gestureInfluenceRadius = pointerInfluenceRadius * config.interaction.gestures.influenceRadiusMultiplier;
 
     const influence = config.wordmark.influence;
     const hasLogo = logo !== null && logoBox.w > 0 && logoBox.h > 0;
@@ -293,10 +308,16 @@ export class ParticleField {
       activeAttractors,
       pointer,
       energy,
-      pointerActive: energy > 0.001,
+      pinchForce: gestures.pinch,
+      rotationForce: gestures.rotation,
+      pointerActive:
+        energy > 0.001 || Math.abs(gestures.pinch) > 0.001 || Math.abs(gestures.rotation) > 0.001,
       pointerMaxDistanceSquared:
         (pointerInfluenceRadius * pointerConfig.forceDistanceRadiusMultiplier) ** 2,
+      gestureMaxDistanceSquared:
+        (gestureInfluenceRadius * pointerConfig.forceDistanceRadiusMultiplier) ** 2,
       pointerInfluenceRadius,
+      gestureInfluenceRadius,
       pointerForce: pointerConfig.force,
       pointerFlow,
       hasPointerFlow,
@@ -352,9 +373,13 @@ export class ParticleField {
       activeAttractors,
       pointer,
       energy,
+      pinchForce,
+      rotationForce,
       pointerActive,
       pointerMaxDistanceSquared,
+      gestureMaxDistanceSquared,
       pointerInfluenceRadius,
+      gestureInfluenceRadius,
       pointerForce,
       pointerFlow,
       hasPointerFlow,
@@ -411,7 +436,6 @@ export class ParticleField {
       ax += Math.sin(time * motion.horizontalFlow.personalDriftFrequency + grain.seed) *
         modulation.personalDriftStrength;
       ay += grain.size * config.particles.sizeFallDrift;
-
       if (remoteAttractionActive) {
         const toCenterX = periodicSignedDistance(remoteCenterX - grain.x, width);
         const toCenterY = periodicSignedDistance(remoteCenterY - grain.y, height);
@@ -454,9 +478,39 @@ export class ParticleField {
 
         if (pointerActive && distanceSquared < pointerMaxDistanceSquared) {
           const distance = Math.sqrt(distanceSquared) + 1;
-          const interaction = Math.exp(-distance / pointerInfluenceRadius) * energy * pointerForce;
+          const falloff = Math.exp(-distance / pointerInfluenceRadius);
+          const interaction = falloff * energy * pointerForce;
           ax -= dx / distance * interaction;
           ay -= dy / distance * interaction;
+
+        }
+
+        if (
+          pointerActive &&
+          distanceSquared < gestureMaxDistanceSquared &&
+          (Math.abs(pinchForce) > 0.001 || Math.abs(rotationForce) > 0.001)
+        ) {
+          const distance = Math.sqrt(distanceSquared) + 1;
+          const falloff = Math.exp(-distance / gestureInfluenceRadius);
+          const responseVariation = config.interaction.gestures.responseVariation;
+          const seedFraction = grain.seed - Math.floor(grain.seed);
+          const radialResponse = 1 + (seedFraction * 2 - 1) * responseVariation;
+          const rotationalFraction = (seedFraction * 0.61803398875) % 1;
+          const rotationalResponse = 1 + (rotationalFraction * 2 - 1) * responseVariation;
+          const impulseTime = dt / config.interaction.gestures.pinch.decaySeconds;
+          const contractionResponse = pinchForce < 0
+            ? config.interaction.gestures.pinch.contractionMultiplier
+            : 1;
+          const pinchImpulse = falloff * pinchForce *
+            config.interaction.gestures.pinch.velocityImpulse * impulseTime * radialResponse * contractionResponse;
+          grain.vx -= dx / distance * pinchImpulse;
+          grain.vy -= dy / distance * pinchImpulse;
+
+          const rotationTime = dt / config.interaction.gestures.rotation.decaySeconds;
+          const rotationImpulse = falloff * rotationForce *
+            config.interaction.gestures.rotation.velocityImpulse * rotationTime * rotationalResponse;
+          grain.vx += dy / distance * rotationImpulse;
+          grain.vy -= dx / distance * rotationImpulse;
         }
 
         if (hasPointerFlow && distanceSquared < pointerFlowMaxDistanceSquared) {

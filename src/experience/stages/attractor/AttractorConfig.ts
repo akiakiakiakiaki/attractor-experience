@@ -146,6 +146,21 @@ export interface AttractorConfig {
         vortex: number;
       };
     };
+    gestures: {
+      influenceRadiusMultiplier: number;
+      responseVariation: number;
+      pinch: {
+        fullSpeedPixelsPerSecond: number;
+        velocityImpulse: number;
+        decaySeconds: number;
+        contractionMultiplier: number;
+      };
+      rotation: {
+        fullSpeedRadiansPerSecond: number;
+        velocityImpulse: number;
+        decaySeconds: number;
+      };
+    };
     energy: {
       maximum: number;
       activeDecaySeconds: number;
@@ -180,6 +195,7 @@ export interface AttractorConfig {
       maximumWidth: number;
       widthRatio: number;
       compactWidthRatio: number;
+      compactLandscapeScale: number;
       compactViewportMaxWidth: number;
       compactViewportMaxHeight: number;
       centerY: number;
@@ -387,6 +403,30 @@ function validateConfig(config: AttractorConfig): void {
   assertPositive(config.interaction.pointer.flow.decaySeconds, 'interaction.pointer.flow.decaySeconds');
   assertPositive(config.interaction.pointer.flow.falloffPower, 'interaction.pointer.flow.falloffPower');
   assertUnitInterval(config.interaction.pointer.flow.smoothing, 'interaction.pointer.flow.smoothing');
+  assertPositive(
+    config.interaction.gestures.influenceRadiusMultiplier,
+    'interaction.gestures.influenceRadiusMultiplier',
+  );
+  assertUnitInterval(config.interaction.gestures.responseVariation, 'interaction.gestures.responseVariation');
+  assertPositive(
+    config.interaction.gestures.pinch.fullSpeedPixelsPerSecond,
+    'interaction.gestures.pinch.fullSpeedPixelsPerSecond',
+  );
+  assertPositive(config.interaction.gestures.pinch.velocityImpulse, 'interaction.gestures.pinch.velocityImpulse');
+  assertPositive(config.interaction.gestures.pinch.decaySeconds, 'interaction.gestures.pinch.decaySeconds');
+  assertUnitInterval(
+    config.interaction.gestures.pinch.contractionMultiplier,
+    'interaction.gestures.pinch.contractionMultiplier',
+  );
+  assertPositive(
+    config.interaction.gestures.rotation.fullSpeedRadiansPerSecond,
+    'interaction.gestures.rotation.fullSpeedRadiansPerSecond',
+  );
+  assertPositive(
+    config.interaction.gestures.rotation.velocityImpulse,
+    'interaction.gestures.rotation.velocityImpulse',
+  );
+  assertPositive(config.interaction.gestures.rotation.decaySeconds, 'interaction.gestures.rotation.decaySeconds');
   assertPositive(config.interaction.energy.maximum, 'interaction.energy.maximum');
   assertPositive(config.interaction.energy.activeDecaySeconds, 'interaction.energy.activeDecaySeconds');
   assertPositive(config.interaction.energy.restingDecaySeconds, 'interaction.energy.restingDecaySeconds');
@@ -396,6 +436,7 @@ function validateConfig(config: AttractorConfig): void {
   assertPositive(layout.maximumWidth, 'wordmark.layout.maximumWidth');
   assertPositive(layout.widthRatio, 'wordmark.layout.widthRatio');
   assertPositive(layout.compactWidthRatio, 'wordmark.layout.compactWidthRatio');
+  assertUnitInterval(layout.compactLandscapeScale, 'wordmark.layout.compactLandscapeScale');
   assertUnitInterval(layout.widthRatio, 'wordmark.layout.widthRatio');
   assertUnitInterval(layout.compactWidthRatio, 'wordmark.layout.compactWidthRatio');
   assertPositive(layout.compactViewportMaxWidth, 'wordmark.layout.compactViewportMaxWidth');

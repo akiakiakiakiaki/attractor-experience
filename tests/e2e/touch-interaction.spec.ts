@@ -91,4 +91,81 @@ test.describe('Attractor touch interaction', () => {
     expect(state.touchStartPrevented).toBe(true);
     expect(state.scrollY).toBe(0);
   });
+
+  test('receives two independent touch pointers for pinch and rotation gestures', async ({
+    page,
+    context,
+  }) => {
+    await page.goto('/en/');
+
+    const canvas = page.getByTestId('attractor-canvas');
+    const bounds = await canvas.boundingBox();
+    expect(bounds).not.toBeNull();
+
+    await page.evaluate(() => {
+      const target = document.querySelector<HTMLCanvasElement>('[data-testid="attractor-canvas"]');
+      if (!target) throw new Error('Attractor canvas not found');
+
+      const testWindow = window as Window & {
+        __multiTouchPointers?: Array<{ type: string; id: number; pointerType: string }>;
+      };
+      testWindow.__multiTouchPointers = [];
+      for (const type of ['pointerdown', 'pointermove', 'pointerup', 'pointercancel']) {
+        target.addEventListener(type, (event) => {
+          const pointer = event as PointerEvent;
+          testWindow.__multiTouchPointers?.push({
+            type,
+            id: pointer.pointerId,
+            pointerType: pointer.pointerType,
+          });
+        });
+      }
+    });
+
+    const centerX = bounds!.x + bounds!.width / 2;
+    const centerY = bounds!.y + bounds!.height / 2;
+    const session = await context.newCDPSession(page);
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [
+        { id: 1, x: centerX - 24, y: centerY },
+        { id: 2, x: centerX + 24, y: centerY },
+      ],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [
+        { id: 1, x: centerX - 42, y: centerY - 8 },
+        { id: 2, x: centerX + 42, y: centerY + 8 },
+      ],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchMove',
+      touchPoints: [
+        { id: 1, x: centerX - 42, y: centerY + 8 },
+        { id: 2, x: centerX + 42, y: centerY - 8 },
+      ],
+    });
+    await session.send('Input.dispatchTouchEvent', {
+      type: 'touchEnd',
+      touchPoints: [],
+    });
+
+    const pointerEvents = await page.evaluate(() =>
+      (window as Window & {
+        __multiTouchPointers?: Array<{ type: string; id: number; pointerType: string }>;
+      }).__multiTouchPointers ?? [],
+    );
+    const touchPointerIds = [...new Set(
+      pointerEvents.filter(({ type }) => type === 'pointerdown').map(({ id }) => id),
+    )];
+    const movingPointerIds = [...new Set(
+      pointerEvents.filter(({ type }) => type === 'pointermove').map(({ id }) => id),
+    )];
+
+    expect(touchPointerIds).toHaveLength(2);
+    expect(movingPointerIds).toHaveLength(2);
+    expect(pointerEvents.every(({ pointerType }) => pointerType === 'touch')).toBe(true);
+    expect(pointerEvents.some(({ type }) => type === 'pointercancel')).toBe(false);
+  });
 });
